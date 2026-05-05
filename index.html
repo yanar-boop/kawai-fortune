@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kawaï Fortune - Collection on WAX</title>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --mint: #99FFCC; --rose: #FFB3E6; --bleu: #A2D9F9;
+            --jaune: #FFF5CC; --lavande: #D6BBFF; --creme: #FFFFE0;
+            --dark: #2D2D2D;
+        }
+
+        body {
+            background: #e2c9b0 url('https://www.transparenttextures.com/patterns/wood-pattern.png');
+            font-family: 'Quicksand', sans-serif;
+            margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh;
+            overflow: hidden;
+        }
+
+        #desk-mat {
+            background: #E0F7F1; width: 1000px; border-radius: 50px; padding: 40px;
+            box-shadow: 0 25px 0px rgba(0,0,0,0.1); border: 6px solid white;
+            position: relative; display: flex; flex-direction: column; gap: 20px;
+        }
+
+        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+
+        h1 {
+            font-size: 56px; color: white; margin: 0;
+            -webkit-text-stroke: 10px var(--dark); paint-order: stroke fill;
+        }
+
+        .brand p { font-weight: 700; color: var(--dark); letter-spacing: 2px; margin: 0; }
+
+        .header-right { display: flex; flex-direction: column; align-items: flex-end; gap: 10px; }
+
+        #lancers-count {
+            background: white; border: 3px solid var(--dark); padding: 5px 15px;
+            border-radius: 12px; font-weight: 700; font-size: 14px;
+        }
+
+        #btn-connect {
+            background: var(--mint); border: 3px solid var(--dark); padding: 12px 25px;
+            border-radius: 20px; font-weight: 700; cursor: pointer; box-shadow: 4px 4px 0px var(--dark);
+        }
+
+        #game-grid { display: grid; grid-template-columns: 1.6fr 1fr; gap: 30px; }
+
+        .panel {
+            background: white; border: 4px solid var(--dark); border-radius: 30px;
+            padding: 25px; box-shadow: 8px 8px 0px rgba(0,0,0,0.05);
+            display: flex; flex-direction: column; align-items: center; position: relative;
+        }
+
+        #pointer {
+            width: 0; height: 0; border-left: 20px solid transparent; border-right: 20px solid transparent;
+            border-top: 35px solid var(--rose); position: absolute; top: 15px; z-index: 10;
+            filter: drop-shadow(3px 3px 0px var(--dark));
+        }
+
+        #btn-lancer {
+            background: var(--lavande); border: 4px solid var(--dark); width: 100%;
+            padding: 20px; border-radius: 25px; font-size: 22px; font-weight: 700;
+            margin-top: 20px; cursor: pointer; box-shadow: 0 8px 0px #b085f5;
+            transition: all 0.1s;
+        }
+
+        #btn-lancer:disabled { background: #ccc; box-shadow: 0 4px 0px #999; cursor: not-allowed; opacity: 0.7; }
+        #btn-lancer:active:not(:disabled) { transform: translateY(4px); box-shadow: 0 4px 0px #b085f5; }
+
+        aside h3 { margin-top: 0; border-bottom: 3px dashed var(--mint); padding-bottom: 10px; width: 100%; text-align: center; }
+
+        #history { width: 100%; max-height: 300px; overflow-y: auto; }
+
+        .win-card {
+            background: #F9F7FF; border: 2px solid var(--dark); padding: 12px;
+            border-radius: 15px; margin-bottom: 10px; font-weight: 700;
+            display: flex; align-items: center; gap: 10px;
+        }
+
+        /* Stickers déco */
+        .sticker { width: 200px; position: absolute; z-index: 5; filter: drop-shadow(4px 4px 0px rgba(0,0,0,0.1)); pointer-events: none; }
+        .s1 { bottom: 150px; left: -30px; transform: rotate(-15deg); }
+        .s2 { top: -25px; right: 200px; transform: rotate(10deg); }
+        .s3 { bottom: 400px; right: 50px; transform: rotate(20deg);}
+        .s4 { top: 150px; left: -40px; transform: rotate(-10deg); }
+        .s5 { bottom: 150px; left: 58%; transform: translateX(-50%) rotate(5deg);}
+    </style>
+</head>
+<body>
+    <div id="desk-mat">
+        <img src="nft-champignon.png" class="sticker s1">
+        <img src="retry-cloud.png" class="sticker s2">
+        <img src="wax-token.png" class="sticker s3">
+        <img src="nft-diamant.png" class="sticker s4">
+        <img src="avatar-dinosaure.PNG" class="sticker s5">
+
+        <header>
+            <div class="brand">
+                <h1>Kawaï Fortune</h1>
+                <p>COLLECTION ON WAX</p>
+            </div>
+            <div class="header-right">
+                <div id="lancers-count">Lancers : <span id="count-val">3/3</span></div>
+                <button id="btn-connect">1. CONNEXION WAX</button>
+            </div>
+        </header>
+
+        <main id="game-grid">
+            <section class="panel">
+                <div id="pointer"></div>
+                <canvas id="canvas" width="450" height="450"></canvas>
+               <button id="btn-lancer">2. REGARDER LA PUB (+1 LANCER) ✨</button>
+            </section>
+
+            <aside>
+                <div class="panel">
+                    <h3>DERNIERS GAINS</h3>
+                    <div id="history">
+                        <div class="win-card">☁️ Bienvenue !</div>
+                    </div>
+                </div>
+            </aside>
+        </main>
+            <script src="app.js"></script>
+    <!-- À placer juste avant le dernier </div> de ton #desk-mat -->
+<footer style="
+    grid-column: 1 / span 2; 
+    margin-top: 30px; 
+    padding: 20px; 
+    border-top: 2px dashed var(--mint); 
+    font-size: 13px; 
+    color: var(--dark); 
+    text-align: center; 
+    line-height: 1.5;
+    opacity: 0.8;">
+    <p><strong>DISCLAIMER :</strong> Kawaï Fortune est un jeu gratuit de simulation. Les récompenses en WAX sont distribuées manuellement chaque semaine sous réserve de validation des revenus publicitaires. Ce site n'est pas une plateforme de jeu d'argent. Aucun dépôt d'argent réel n'est requis pour participer.</p>
+</footer>
+    </div>
+
+</body>
+</html>
