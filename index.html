@@ -3,142 +3,403 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kawaï Fortune - Collection on WAX</title>
-    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
+    <title>Kawaï Fortune — Collection on WAX</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --mint: #99FFCC; --rose: #FFB3E6; --bleu: #A2D9F9;
-            --jaune: #FFF5CC; --lavande: #D6BBFF; --creme: #FFFFE0;
-            --dark: #2D2D2D;
+            --mint:    #99FFCC;
+            --rose:    #FFB3E6;
+            --bleu:    #A2D9F9;
+            --jaune:   #FFF5CC;
+            --lavande: #D6BBFF;
+            --lavande-dark: #b085f5;
+            --creme:   #FFFFE0;
+            --dark:    #2D2D2D;
+            --mat-bg:  #dff5ef;
+            --mat-border: #c2ead9;
+            --panel-shadow: 6px 6px 0px rgba(45,45,45,0.08);
         }
 
+        * { box-sizing: border-box; }
+
         body {
-            background: #e2c9b0 url('https://www.transparenttextures.com/patterns/wood-pattern.png');
+            background-color: #d4bfa3;
+            background-image: url('https://www.transparenttextures.com/patterns/wood-pattern.png');
             font-family: 'Quicksand', sans-serif;
-            margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh;
-            overflow: hidden;
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 30px 16px;
         }
 
         #desk-mat {
-            background: #E0F7F1; width: 1000px; border-radius: 50px; padding: 40px;
-            box-shadow: 0 25px 0px rgba(0,0,0,0.1); border: 6px solid white;
-            position: relative; display: flex; flex-direction: column; gap: 20px;
+            background: var(--mat-bg);
+            width: 100%;
+            max-width: 1020px;
+            border-radius: 48px;
+            padding: 36px 40px 30px;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.15), 0 0 0 6px white, 0 0 0 8px var(--mat-border);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            gap: 22px;
+            overflow: visible;
         }
 
-        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        /* ── STICKERS ── */
+        .sticker {
+            width: 160px;
+            position: absolute;
+            z-index: 5;
+            filter: drop-shadow(3px 4px 0px rgba(0,0,0,0.12));
+            pointer-events: none;
+            transition: transform 0.3s ease;
+        }
+        .s1 { bottom: 130px; left: -28px; transform: rotate(-14deg); }
+        .s2 { top: -22px;    right: 190px; transform: rotate(9deg); }
+        .s4 { top: 140px;    left: -36px; transform: rotate(-9deg); }
+        .s5 { bottom: 120px; left: 57%;  transform: translateX(-50%) rotate(4deg); }
+
+        /* ── HEADER ── */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 14px;
+        }
 
         h1 {
-            font-size: 56px; color: white; margin: 0;
-            -webkit-text-stroke: 10px var(--dark); paint-order: stroke fill;
+            font-family: 'Nunito', sans-serif;
+            font-size: clamp(36px, 5vw, 58px);
+            font-weight: 900;
+            color: white;
+            margin: 0;
+            line-height: 1;
+            -webkit-text-stroke: 9px var(--dark);
+            paint-order: stroke fill;
+            letter-spacing: -1px;
         }
 
-        .brand p { font-weight: 700; color: var(--dark); letter-spacing: 2px; margin: 0; }
+        .brand p {
+            font-weight: 700;
+            color: var(--dark);
+            letter-spacing: 3px;
+            font-size: 12px;
+            margin: 6px 0 0 2px;
+            opacity: 0.6;
+        }
 
-        .header-right { display: flex; flex-direction: column; align-items: flex-end; gap: 10px; }
+        .header-right {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 10px;
+        }
 
         #lancers-count {
-            background: white; border: 3px solid var(--dark); padding: 5px 15px;
-            border-radius: 12px; font-weight: 700; font-size: 14px;
+            background: white;
+            border: 3px solid var(--dark);
+            padding: 6px 16px;
+            border-radius: 14px;
+            font-weight: 700;
+            font-size: 13px;
+            box-shadow: 3px 3px 0 var(--dark);
+            white-space: nowrap;
         }
+
+        #lancers-count span { color: #6a3fc2; }
 
         #btn-connect {
-            background: var(--mint); border: 3px solid var(--dark); padding: 12px 25px;
-            border-radius: 20px; font-weight: 700; cursor: pointer; box-shadow: 4px 4px 0px var(--dark);
+            background: var(--mint);
+            border: 3px solid var(--dark);
+            padding: 11px 22px;
+            border-radius: 18px;
+            font-family: 'Quicksand', sans-serif;
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            box-shadow: 4px 4px 0px var(--dark);
+            transition: all 0.12s;
+            white-space: nowrap;
         }
+        #btn-connect:hover { transform: translateY(-2px); box-shadow: 4px 6px 0px var(--dark); }
+        #btn-connect:active { transform: translateY(2px); box-shadow: 2px 2px 0px var(--dark); }
 
-        #game-grid { display: grid; grid-template-columns: 1.6fr 1fr; gap: 30px; }
+        /* ── GRID ── */
+        #game-grid {
+            display: grid;
+            grid-template-columns: 1.55fr 1fr;
+            gap: 24px;
+        }
 
         .panel {
-            background: white; border: 4px solid var(--dark); border-radius: 30px;
-            padding: 25px; box-shadow: 8px 8px 0px rgba(0,0,0,0.05);
-            display: flex; flex-direction: column; align-items: center; position: relative;
+            background: white;
+            border: 3px solid var(--dark);
+            border-radius: 28px;
+            padding: 24px;
+            box-shadow: var(--panel-shadow);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
         }
 
+        /* ── POINTER ── */
+        #pointer-wrap {
+            position: absolute;
+            top: 10px;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0;
+        }
         #pointer {
-            width: 0; height: 0; border-left: 20px solid transparent; border-right: 20px solid transparent;
-            border-top: 35px solid var(--rose); position: absolute; top: 15px; z-index: 10;
-            filter: drop-shadow(3px 3px 0px var(--dark));
+            width: 0; height: 0;
+            border-left: 18px solid transparent;
+            border-right: 18px solid transparent;
+            border-top: 32px solid var(--rose);
+            filter: drop-shadow(2px 2px 0px var(--dark));
+        }
+        #pointer-stem {
+            width: 8px; height: 14px;
+            background: var(--rose);
+            border-radius: 0 0 4px 4px;
+            margin-top: -2px;
+            border: 2px solid var(--dark);
+            border-top: none;
         }
 
+        canvas {
+            border-radius: 50%;
+            border: 4px solid var(--dark);
+            box-shadow: 0 6px 0 rgba(45,45,45,0.12), 0 0 0 8px white, 0 0 0 11px var(--dark);
+            display: block;
+            margin-top: 30px;
+        }
+
+        /* ── BOUTON LANCER ── */
         #btn-lancer {
-            background: var(--lavande); border: 4px solid var(--dark); width: 100%;
-            padding: 20px; border-radius: 25px; font-size: 22px; font-weight: 700;
-            margin-top: 20px; cursor: pointer; box-shadow: 0 8px 0px #b085f5;
+            background: var(--lavande);
+            border: 3px solid var(--dark);
+            width: 100%;
+            padding: 18px;
+            border-radius: 22px;
+            font-family: 'Nunito', sans-serif;
+            font-size: 18px;
+            font-weight: 800;
+            margin-top: 22px;
+            cursor: pointer;
+            box-shadow: 0 7px 0px var(--lavande-dark);
             transition: all 0.1s;
+            letter-spacing: 0.3px;
+        }
+        #btn-lancer:hover:not(:disabled) {
+            background: #e2d0ff;
+            transform: translateY(-2px);
+            box-shadow: 0 9px 0px var(--lavande-dark);
+        }
+        #btn-lancer:active:not(:disabled) {
+            transform: translateY(5px);
+            box-shadow: 0 2px 0px var(--lavande-dark);
+        }
+        #btn-lancer:disabled {
+            background: #e0e0e0;
+            color: #999;
+            box-shadow: 0 4px 0px #bbb;
+            cursor: not-allowed;
         }
 
-        #btn-lancer:disabled { background: #ccc; box-shadow: 0 4px 0px #999; cursor: not-allowed; opacity: 0.7; }
-        #btn-lancer:active:not(:disabled) { transform: translateY(4px); box-shadow: 0 4px 0px #b085f5; }
+        /* ── ASIDE / HISTORIQUE ── */
+        aside .panel {
+            height: 100%;
+            justify-content: flex-start;
+            padding: 22px;
+        }
 
-        aside h3 { margin-top: 0; border-bottom: 3px dashed var(--mint); padding-bottom: 10px; width: 100%; text-align: center; }
+        aside h3 {
+            font-family: 'Nunito', sans-serif;
+            font-weight: 800;
+            font-size: 15px;
+            letter-spacing: 2px;
+            margin: 0 0 14px;
+            border-bottom: 3px dashed var(--mint);
+            padding-bottom: 12px;
+            width: 100%;
+            text-align: center;
+            color: var(--dark);
+        }
 
-        #history { width: 100%; max-height: 300px; overflow-y: auto; }
+        #history {
+            width: 100%;
+            max-height: 340px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        #history::-webkit-scrollbar { width: 5px; }
+        #history::-webkit-scrollbar-track { background: transparent; }
+        #history::-webkit-scrollbar-thumb { background: var(--lavande); border-radius: 99px; }
 
         .win-card {
-            background: #F9F7FF; border: 2px solid var(--dark); padding: 12px;
-            border-radius: 15px; margin-bottom: 10px; font-weight: 700;
-            display: flex; align-items: center; gap: 10px;
+            background: #F9F7FF;
+            border: 2px solid var(--dark);
+            padding: 11px 14px;
+            border-radius: 16px;
+            font-weight: 700;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: pop-in 0.3s cubic-bezier(0.34,1.56,0.64,1);
+        }
+        .win-card.wax {
+            background: linear-gradient(135deg, #fffbe6, #fff3cc);
+            border-color: #d4a800;
+        }
+        .win-card .win-icon { font-size: 22px; flex-shrink: 0; }
+        .win-card .win-label { flex: 1; }
+        .win-card .win-time { font-size: 11px; color: #aaa; font-weight: 500; }
+
+        @keyframes pop-in {
+            from { transform: scale(0.7); opacity: 0; }
+            to   { transform: scale(1);   opacity: 1; }
         }
 
-        /* Stickers déco */
-        .sticker { width: 200px; position: absolute; z-index: 5; filter: drop-shadow(4px 4px 0px rgba(0,0,0,0.1)); pointer-events: none; }
-        .s1 { bottom: 150px; left: -30px; transform: rotate(-15deg); }
-        .s2 { top: -25px; right: 200px; transform: rotate(10deg); }
-        .s3 { bottom: 400px; right: 50px; transform: rotate(20deg);}
-        .s4 { top: 150px; left: -40px; transform: rotate(-10deg); }
-        .s5 { bottom: 150px; left: 58%; transform: translateX(-50%) rotate(5deg);}
+        /* ── POPUP GAGNÉ ── */
+        #win-popup {
+            display: none;
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%) scale(0.5);
+            background: white;
+            border: 4px solid var(--dark);
+            border-radius: 28px;
+            padding: 30px 36px;
+            text-align: center;
+            z-index: 100;
+            box-shadow: 8px 8px 0 var(--dark);
+            min-width: 240px;
+            transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+        }
+        #win-popup.show {
+            display: block;
+            transform: translate(-50%, -50%) scale(1);
+        }
+        #win-popup .popup-emoji { font-size: 56px; line-height: 1; }
+        #win-popup h2 { font-family: 'Nunito', sans-serif; font-size: 26px; font-weight: 900; margin: 8px 0 4px; color: var(--dark); }
+        #win-popup p  { color: #777; font-size: 14px; margin: 0 0 16px; }
+        #btn-popup-close {
+            background: var(--mint);
+            border: 3px solid var(--dark);
+            padding: 10px 28px;
+            border-radius: 14px;
+            font-family: 'Quicksand', sans-serif;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 3px 3px 0 var(--dark);
+        }
+
+        /* ── COMPTE À REBOURS ── */
+        #countdown-wrap {
+            display: none;
+            width: 100%;
+            margin-top: 10px;
+            text-align: center;
+            font-weight: 700;
+            font-size: 13px;
+            color: #888;
+        }
+        #countdown-wrap span { color: #6a3fc2; font-size: 15px; }
+
+        /* ── FOOTER ── */
+        footer {
+            margin-top: 10px;
+            padding: 16px 20px;
+            border-top: 2px dashed var(--mint);
+            font-size: 12px;
+            color: var(--dark);
+            text-align: center;
+            line-height: 1.6;
+            opacity: 0.6;
+        }
+
+        /* ── RESPONSIVE ── */
+        @media (max-width: 680px) {
+            #desk-mat { padding: 24px 18px; border-radius: 30px; }
+            #game-grid { grid-template-columns: 1fr; }
+            .sticker { display: none; }
+            canvas { width: 300px !important; height: 300px !important; }
+        }
     </style>
 </head>
 <body>
     <div id="desk-mat">
-        <img src="nft-champignon.png" class="sticker s1">
-        <img src="retry-cloud.png" class="sticker s2">
-        <img src="wax-token.png" class="sticker s3">
-        <img src="nft-diamant.png" class="sticker s4">
-        <img src="avatar-dinosaure.PNG" class="sticker s5">
 
+        <!-- Stickers (wax-token retiré) -->
+        <img src="nft-champignon.png" class="sticker s1" alt="">
+        <img src="retry-cloud.png"    class="sticker s2" alt="">
+        <img src="nft-diamant.png"    class="sticker s4" alt="">
+        <img src="avatar-dinosaure.PNG" class="sticker s5" alt="">
+
+        <!-- Header -->
         <header>
             <div class="brand">
                 <h1>Kawaï Fortune</h1>
-                <p>COLLECTION ON WAX</p>
+                <p>✦ COLLECTION ON WAX ✦</p>
             </div>
             <div class="header-right">
-                <div id="lancers-count">Lancers : <span id="count-val">3/3</span></div>
-                <button id="btn-connect">1. CONNEXION WAX</button>
+                <div id="lancers-count">Lancers restants : <span id="count-val">—</span></div>
+                <button id="btn-connect">⚡ CONNEXION WAX</button>
             </div>
         </header>
 
+        <!-- Grid principal -->
         <main id="game-grid">
+
+            <!-- Roue -->
             <section class="panel">
-                <div id="pointer"></div>
-                <canvas id="canvas" width="450" height="450"></canvas>
-               <button id="btn-lancer">2. REGARDER LA PUB (+1 LANCER) ✨</button>
+                <div id="pointer-wrap">
+                    <div id="pointer"></div>
+                    <div id="pointer-stem"></div>
+                </div>
+                <canvas id="canvas" width="420" height="420"></canvas>
+                <button id="btn-lancer">📺 REGARDER LA PUB &nbsp;(+1 LANCER) ✨</button>
+                <div id="countdown-wrap">Prochaine recharge dans <span id="countdown">—</span></div>
+
+                <!-- Popup victoire -->
+                <div id="win-popup">
+                    <div class="popup-emoji" id="popup-emoji">🎉</div>
+                    <h2 id="popup-title">Bravo !</h2>
+                    <p id="popup-sub">Tu as gagné quelque chose</p>
+                    <button id="btn-popup-close">Super ! ✨</button>
+                </div>
             </section>
 
+            <!-- Historique -->
             <aside>
                 <div class="panel">
-                    <h3>DERNIERS GAINS</h3>
+                    <h3>✦ DERNIERS GAINS ✦</h3>
                     <div id="history">
-                        <div class="win-card">☁️ Bienvenue !</div>
+                        <div class="win-card">
+                            <span class="win-icon">☁️</span>
+                            <span class="win-label">Bienvenue !</span>
+                        </div>
                     </div>
                 </div>
             </aside>
         </main>
-            <script src="app.js"></script>
-    <!-- À placer juste avant le dernier </div> de ton #desk-mat -->
-<footer style="
-    grid-column: 1 / span 2; 
-    margin-top: 30px; 
-    padding: 20px; 
-    border-top: 2px dashed var(--mint); 
-    font-size: 13px; 
-    color: var(--dark); 
-    text-align: center; 
-    line-height: 1.5;
-    opacity: 0.8;">
-    <p><strong>DISCLAIMER :</strong> Kawaï Fortune est un jeu gratuit de simulation. Les récompenses en WAX sont distribuées manuellement chaque semaine sous réserve de validation des revenus publicitaires. Ce site n'est pas une plateforme de jeu d'argent. Aucun dépôt d'argent réel n'est requis pour participer.</p>
-</footer>
+
+        <!-- Footer -->
+        <footer>
+            <strong>DISCLAIMER :</strong> Kawaï Fortune est un jeu gratuit de simulation. Les récompenses en WAX sont distribuées manuellement chaque semaine sous réserve de validation des revenus publicitaires. Ce site n'est pas une plateforme de jeu d'argent. Aucun dépôt d'argent réel n'est requis pour participer.
+        </footer>
     </div>
 
+    <script src="app.js"></script>
 </body>
 </html>
