@@ -123,7 +123,7 @@ class KawaiWheel {
             if (seg.imgObj && seg.imgObj.complete && seg.imgObj.naturalWidth > 0) {
                 this.ctx.translate(r * 0.68, 0);
                 this.ctx.rotate(Math.PI / 2);
-                this.ctx.drawImage(seg.imgObj, -30, -60, 60, 60);
+                this.ctx.drawImage(seg.imgObj, -30, -80, 60, 60);
             }
             this.ctx.restore();
         });
