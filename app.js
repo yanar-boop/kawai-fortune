@@ -206,14 +206,22 @@ class KawaiWheel {
         this.showPopup(seg);
     }
 
+    // Retourne icône + classe CSS selon le type de gain
+    _segMeta(text) {
+        if (text === 'Retry')      return { icon: '☁️',  cls: 'win-card',            rarity: '' };
+        if (text.includes('WAX')) return { icon: '💰',  cls: 'win-card wax',        rarity: '✨' };
+        if (text === 'Motte')      return { icon: '🌱',  cls: 'win-card motte',      rarity: '🟤' };
+        if (text === 'Mycélium')   return { icon: '🔮',  cls: 'win-card mycelium',   rarity: '💜' };
+        if (text === 'Champignon') return { icon: '🍄',  cls: 'win-card champignon', rarity: '🌸' };
+        if (text === 'Origin')     return { icon: '💎',  cls: 'win-card origin',     rarity: '🌟' };
+        return { icon: '🎁', cls: 'win-card', rarity: '' };
+    }
+
     renderHistory(entries) {
         const hist = document.getElementById('history');
         if (!hist) return;
         hist.innerHTML = entries.map(e => {
-            const isWax  = e.text.includes('WAX');
-            const isRetry = e.text === 'Retry';
-            const icon   = isWax ? '💰' : isRetry ? '☁️' : '🍄';
-            const cls    = isWax ? 'win-card wax' : 'win-card';
+            const { icon, cls } = this._segMeta(e.text);
             return `<div class="${cls}">
                 <span class="win-icon">${icon}</span>
                 <span class="win-label">${e.text}</span>
@@ -225,6 +233,7 @@ class KawaiWheel {
     showPopup(seg) {
         const isWax   = seg.text.includes('WAX');
         const isRetry = seg.text === 'Retry';
+        const { icon, rarity } = this._segMeta(seg.text);
 
         const popup = document.getElementById('win-popup');
         const emoji = document.getElementById('popup-emoji');
@@ -235,16 +244,22 @@ class KawaiWheel {
 
         if (isRetry) {
             emoji.innerText = '☁️';
-            title.innerText = 'Pas de chance !';
-            sub.innerText   = 'Retente ta chance… la roue est capricieuse.';
+            title.innerText = 'Pas de chance…';
+            sub.innerText   = 'Retente ta chance ! La roue est capricieuse.';
         } else if (isWax) {
             emoji.innerText = '💰';
             title.innerText = `${seg.text} GAGNÉ !`;
             sub.innerText   = 'Récompense enregistrée — distribution en fin de semaine.';
         } else {
-            emoji.innerText = '🍄';
-            title.innerText = `NFT ${seg.text} !`;
-            sub.innerText   = 'Un NFT de la collection te sera envoyé sur WAX.';
+            emoji.innerText = icon;
+            title.innerText = `NFT ${seg.text} ${rarity}`;
+            const msgs = {
+                'Motte':      'Un NFT Motte de Terre de la collection te sera envoyé sur WAX !',
+                'Mycélium':   'Rare ! Un NFT Mycélium mystique arrive sur ton wallet WAX. 🔮',
+                'Champignon': 'Un joli Champignon NFT est en chemin sur WAX ! 🍄',
+                'Origin':     'LÉGENDAIRE ! Le NFT Origin te sera envoyé très bientôt. 💎',
+            };
+            sub.innerText = msgs[seg.text] || 'Un NFT de la collection te sera envoyé sur WAX.';
         }
 
         popup.classList.add('show');
@@ -253,16 +268,23 @@ class KawaiWheel {
 
 // ─── CHARGEMENT HISTORIQUE AU DÉMARRAGE ───────────────────────────────────
 
+function segMeta(text) {
+    if (text === 'Retry')      return { icon: '☁️',  cls: 'win-card'            };
+    if (text.includes('WAX')) return { icon: '💰',  cls: 'win-card wax'        };
+    if (text === 'Motte')      return { icon: '🌱',  cls: 'win-card motte'      };
+    if (text === 'Mycélium')   return { icon: '🔮',  cls: 'win-card mycelium'   };
+    if (text === 'Champignon') return { icon: '🍄',  cls: 'win-card champignon' };
+    if (text === 'Origin')     return { icon: '💎',  cls: 'win-card origin'     };
+    return { icon: '🎁', cls: 'win-card' };
+}
+
 function loadSavedHistory() {
     const saved = JSON.parse(localStorage.getItem('kawai_history') || '[]');
     if (saved.length === 0) return;
     const hist = document.getElementById('history');
     if (!hist) return;
     hist.innerHTML = saved.map(e => {
-        const isWax   = e.text.includes('WAX');
-        const isRetry = e.text === 'Retry';
-        const icon    = isWax ? '💰' : isRetry ? '☁️' : '🍄';
-        const cls     = isWax ? 'win-card wax' : 'win-card';
+        const { icon, cls } = segMeta(e.text);
         return `<div class="${cls}">
             <span class="win-icon">${icon}</span>
             <span class="win-label">${e.text}</span>
@@ -273,23 +295,63 @@ function loadSavedHistory() {
 
 // ─── DONNÉES DE LA ROUE ───────────────────────────────────────────────────
 
+// 24 segments — répartition finale :
+//  10 × Retry       (41.7%)
+//   6 × Motte       (25.0%)
+//   3 × Mycélium    (12.5%)
+//   2 × Champignon  ( 8.3%)
+//   1 × 0.1 WAX     ( 4.2%)
+//   1 × 1 WAX       ( 4.2%)
+//   1 × Origin      ( 4.2%)
 const segments = [
-    { color: '#D6BBFF', text: 'Retry',      imgSrc: 'retry-cloud.png'    },
-    { color: '#99FFCC', text: 'Champignon', imgSrc: 'nft-champignon.png' },
-    { color: '#D6BBFF', text: 'Retry',      imgSrc: 'retry-cloud.png'    },
-    { color: '#FFEB99', text: 'Origin',     imgSrc: 'nft-diamant.png'    },
-    { color: '#D6BBFF', text: 'Retry',      imgSrc: 'retry-cloud.png'    },
-    { color: '#FFB3E6', text: 'Champignon', imgSrc: 'nft-champignon.png' },
-    { color: '#D6BBFF', text: 'Retry',      imgSrc: 'retry-cloud.png'    },
-    { color: '#FFD700', text: '1 WAX',      imgSrc: 'wax-token.png'      },
-    { color: '#D6BBFF', text: 'Retry',      imgSrc: 'retry-cloud.png'    },
-    { color: '#99FFCC', text: 'Champignon', imgSrc: 'nft-champignon.png' },
-    { color: '#D6BBFF', text: 'Retry',      imgSrc: 'retry-cloud.png'    },
-    { color: '#FFEB99', text: 'Origin',     imgSrc: 'nft-diamant.png'    },
-    { color: '#D6BBFF', text: 'Retry',      imgSrc: 'retry-cloud.png'    },
-    { color: '#FFB3E6', text: 'Champignon', imgSrc: 'nft-champignon.png' },
-    { color: '#D6BBFF', text: 'Retry',      imgSrc: 'retry-cloud.png'    },
-    { color: '#FFD700', text: '0.5 WAX',    imgSrc: 'wax-token.png'      }
+    // 0
+    { color: '#D6BBFF', text: 'Retry',      imgSrc: 'retry-cloud.png'   },
+    // 1
+    { color: '#C8935A', text: 'Motte',      imgSrc: 'nft-motte.png'     },
+    // 2
+    { color: '#D6BBFF', text: 'Retry',      imgSrc: 'retry-cloud.png'   },
+    // 3
+    { color: '#FFB3E6', text: 'Champignon', imgSrc: 'nft-champignon.png'},
+    // 4
+    { color: '#D6BBFF', text: 'Retry',      imgSrc: 'retry-cloud.png'   },
+    // 5
+    { color: '#C8935A', text: 'Motte',      imgSrc: 'nft-motte.png'     },
+    // 6
+    { color: '#D6BBFF', text: 'Retry',      imgSrc: 'retry-cloud.png'   },
+    // 7
+    { color: '#7B4FA6', text: 'Mycélium',   imgSrc: 'nft-mycelium.png'  },
+    // 8
+    { color: '#D6BBFF', text: 'Retry',      imgSrc: 'retry-cloud.png'   },
+    // 9
+    { color: '#C8935A', text: 'Motte',      imgSrc: 'nft-motte.png'     },
+    // 10
+    { color: '#D6BBFF', text: 'Retry',      imgSrc: 'retry-cloud.png'   },
+    // 11
+    { color: '#FFD700', text: '0.1 WAX',    imgSrc: 'wax-token.png'     },
+    // 12
+    { color: '#D6BBFF', text: 'Retry',      imgSrc: 'retry-cloud.png'   },
+    // 13
+    { color: '#C8935A', text: 'Motte',      imgSrc: 'nft-motte.png'     },
+    // 14
+    { color: '#D6BBFF', text: 'Retry',      imgSrc: 'retry-cloud.png'   },
+    // 15
+    { color: '#7B4FA6', text: 'Mycélium',   imgSrc: 'nft-mycelium.png'  },
+    // 16
+    { color: '#D6BBFF', text: 'Retry',      imgSrc: 'retry-cloud.png'   },
+    // 17
+    { color: '#FFB3E6', text: 'Champignon', imgSrc: 'nft-champignon.png'},
+    // 18
+    { color: '#D6BBFF', text: 'Retry',      imgSrc: 'retry-cloud.png'   },
+    // 19
+    { color: '#C8935A', text: 'Motte',      imgSrc: 'nft-motte.png'     },
+    // 20
+    { color: '#D6BBFF', text: 'Retry',      imgSrc: 'retry-cloud.png'   },
+    // 21
+    { color: '#7B4FA6', text: 'Mycélium',   imgSrc: 'nft-mycelium.png'  },
+    // 22
+    { color: '#FFD700', text: '1 WAX',      imgSrc: 'wax-token.png'     },
+    // 23
+    { color: '#A2D9F9', text: 'Origin',     imgSrc: 'nft-diamant.png'   },
 ];
 
 // ─── INIT ─────────────────────────────────────────────────────────────────
@@ -303,24 +365,73 @@ window.onbeforeunload = () => {
     localStorage.setItem('is_spinning', 'false');
 };
 
-// ─── CONNEXION WAX ────────────────────────────────────────────────────────
-// Pour une vraie intégration, charger WaxJS :
+// ─── CONNEXION WAX RÉELLE (WaxJS Cloud Wallet) ────────────────────────────
+// WaxJS est chargé via le CDN dans index.html :
 //   <script src="https://unpkg.com/@waxio/waxjs/dist/wax.js"></script>
-// puis remplacer le bloc ci-dessous par :
-//   const wax = new WaxJS({ rpcEndpoint: 'https://wax.greymass.com' });
-//   const userAccount = await wax.login();
+//
+// Flux :
+//   1. L'utilisateur clique "CONNEXION WAX"
+//   2. wax.login() ouvre le Cloud Wallet WAX dans un popup
+//   3. Après approbation, wax.userAccount contient l'adresse (ex: "alice.wam")
+//   4. On stocke l'adresse pour la session et on l'affiche dans le header
+
+const wax = new WaxJS({
+    rpcEndpoint: 'https://wax.greymass.com',   // nœud RPC public WAX
+    tryAutoLogin: true,                          // reconnexion auto si déjà connecté
+});
+
+// Affichage du compte connecté dans le bouton
+function showWaxConnected(account) {
+    const btn = document.getElementById('btn-connect');
+    const truncated = account.length > 14
+        ? account.slice(0, 6) + '…' + account.slice(-4)
+        : account;
+    btn.innerText        = `✅ ${truncated}`;
+    btn.style.background = '#D6BBFF';
+    btn.style.cursor     = 'default';
+    btn.disabled         = true;
+
+    // Affiche le compte dans la zone lancers
+    const countEl = document.getElementById('lancers-count');
+    if (countEl) {
+        countEl.title = `Compte WAX : ${account}`;
+    }
+
+    // Mémorise le compte pour la session (pas de données sensibles)
+    sessionStorage.setItem('wax_account', account);
+    console.log('WAX connecté :', account);
+}
+
+// Auto-login au chargement si une session existe
+(async () => {
+    try {
+        const autoOk = await wax.isAutoLoginAvailable();
+        if (autoOk && wax.userAccount) {
+            showWaxConnected(wax.userAccount);
+        }
+    } catch (e) {
+        // Pas de session active — pas d'erreur à afficher
+    }
+})();
 
 document.getElementById('btn-connect').onclick = async () => {
     const btn = document.getElementById('btn-connect');
-    btn.innerText = '⏳ Connexion…';
+
+    // Déjà connecté — ne rien faire
+    if (sessionStorage.getItem('wax_account')) return;
+
+    btn.innerText = '⏳ Ouverture du wallet…';
     btn.disabled  = true;
 
-    // Simulation connexion (remplacer par wax.login() en production)
-    await new Promise(r => setTimeout(r, 1200));
-
-    btn.innerText          = '✅ WAX CONNECTÉ';
-    btn.style.background   = '#D6BBFF';
-    btn.style.cursor       = 'default';
+    try {
+        const account = await wax.login();  // ouvre le popup WAX Cloud Wallet
+        showWaxConnected(account);
+    } catch (err) {
+        // L'utilisateur a fermé le popup ou refusé
+        console.warn('Connexion WAX annulée :', err.message);
+        btn.innerText = '⚡ CONNEXION WAX';
+        btn.disabled  = false;
+    }
 };
 
 // ─── BOUTON FERMER POPUP ──────────────────────────────────────────────────
