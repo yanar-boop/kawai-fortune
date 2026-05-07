@@ -365,73 +365,198 @@ window.onbeforeunload = () => {
     localStorage.setItem('is_spinning', 'false');
 };
 
-// ─── CONNEXION WAX RÉELLE (WaxJS Cloud Wallet) ────────────────────────────
-// WaxJS est chargé via le CDN dans index.html :
-//   <script src="https://unpkg.com/@waxio/waxjs/dist/wax.js"></script>
+// ─── CONNEXION WAX — Multi-wallet (Cloud Wallet + Anchor + Wombat) ────────
 //
-// Flux :
-//   1. L'utilisateur clique "CONNEXION WAX"
-//   2. wax.login() ouvre le Cloud Wallet WAX dans un popup
-//   3. Après approbation, wax.userAccount contient l'adresse (ex: "alice.wam")
-//   4. On stocke l'adresse pour la session et on l'affiche dans le header
+// Stratégie :
+//   • Clic sur le bouton → modal de choix du wallet
+//   • Cloud Wallet : popup mycloudwallet.com  (via WaxJS)
+//   • Anchor       : deeplink / QR code       (via UAL_Anchor)
+//   • Wombat       : extension browser        (via WaxJS fallback)
+//
+// Le bundle wax.js expose : window.WaxJS, window.UAL_Wax, window.UAL_Anchor
 
-const wax = new WaxJS({
-    rpcEndpoint: 'https://wax.greymass.com',   // nœud RPC public WAX
-    tryAutoLogin: true,                          // reconnexion auto si déjà connecté
-});
+// ── Styles de la modal wallet ─────────────────────────────────────────────
+(function injectWalletModalStyles() {
+    const s = document.createElement('style');
+    s.textContent = `
+    #wallet-modal-overlay {
+        display: none; position: fixed; inset: 0;
+        background: rgba(45,45,45,0.55); backdrop-filter: blur(4px);
+        z-index: 1000; justify-content: center; align-items: center;
+    }
+    #wallet-modal-overlay.open { display: flex; }
+    #wallet-modal {
+        background: white; border: 4px solid #2D2D2D; border-radius: 28px;
+        padding: 28px 32px; min-width: 300px; max-width: 90vw;
+        box-shadow: 8px 8px 0 #2D2D2D;
+        animation: modal-pop 0.3s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    @keyframes modal-pop {
+        from { transform: scale(0.6); opacity: 0; }
+        to   { transform: scale(1);   opacity: 1; }
+    }
+    #wallet-modal h2 {
+        font-family: 'Nunito', sans-serif; font-weight: 900;
+        font-size: 20px; margin: 0 0 6px; color: #2D2D2D; text-align: center;
+    }
+    #wallet-modal p {
+        font-size: 13px; color: #888; text-align: center; margin: 0 0 20px;
+    }
+    .wallet-btn {
+        display: flex; align-items: center; gap: 14px;
+        width: 100%; padding: 14px 18px; margin-bottom: 10px;
+        background: #F9F7FF; border: 3px solid #2D2D2D; border-radius: 18px;
+        font-family: 'Quicksand', sans-serif; font-weight: 700; font-size: 15px;
+        cursor: pointer; box-shadow: 3px 3px 0 #2D2D2D;
+        transition: all 0.1s;
+    }
+    .wallet-btn:hover { background: #ede8ff; transform: translateY(-2px); box-shadow: 3px 5px 0 #2D2D2D; }
+    .wallet-btn:active { transform: translateY(2px); box-shadow: 1px 1px 0 #2D2D2D; }
+    .wallet-btn img { width: 36px; height: 36px; border-radius: 10px; }
+    .wallet-btn .wname { flex: 1; text-align: left; }
+    .wallet-btn .warrow { color: #aaa; font-size: 18px; }
+    #wallet-modal-close {
+        display: block; width: 100%; margin-top: 6px; padding: 10px;
+        background: none; border: 2px dashed #ccc; border-radius: 14px;
+        font-family: 'Quicksand', sans-serif; font-weight: 700;
+        color: #aaa; cursor: pointer; font-size: 13px;
+    }
+    #wallet-modal-close:hover { border-color: #999; color: #666; }
+    `;
+    document.head.appendChild(s);
+})();
 
-// Affichage du compte connecté dans le bouton
-function showWaxConnected(account) {
+// ── HTML de la modal ──────────────────────────────────────────────────────
+(function injectWalletModal() {
+    const div = document.createElement('div');
+    div.id = 'wallet-modal-overlay';
+    div.innerHTML = `
+    <div id="wallet-modal">
+        <h2>Choisir un wallet</h2>
+        <p>Connecte-toi avec ton wallet WAX préféré</p>
+        <button class="wallet-btn" id="btn-wallet-wax">
+            <img src="https://avatars.githubusercontent.com/u/36253920" alt="WAX">
+            <span class="wname">WAX Cloud Wallet</span>
+            <span class="warrow">›</span>
+        </button>
+        <button class="wallet-btn" id="btn-wallet-anchor">
+            <img src="https://avatars.githubusercontent.com/u/56041890" alt="Anchor">
+            <span class="wname">Anchor</span>
+            <span class="warrow">›</span>
+        </button>
+        <button class="wallet-btn" id="btn-wallet-wombat">
+            <img src="https://avatars.githubusercontent.com/u/78037905" alt="Wombat">
+            <span class="wname">Wombat</span>
+            <span class="warrow">›</span>
+        </button>
+        <button id="wallet-modal-close">Annuler</button>
+    </div>`;
+    document.body.appendChild(div);
+})();
+
+// ── Helpers ───────────────────────────────────────────────────────────────
+function showWaxConnected(account, walletName) {
     const btn = document.getElementById('btn-connect');
     const truncated = account.length > 14
-        ? account.slice(0, 6) + '…' + account.slice(-4)
-        : account;
+        ? account.slice(0, 6) + '…' + account.slice(-4) : account;
     btn.innerText        = `✅ ${truncated}`;
     btn.style.background = '#D6BBFF';
     btn.style.cursor     = 'default';
     btn.disabled         = true;
-
-    // Affiche le compte dans la zone lancers
-    const countEl = document.getElementById('lancers-count');
-    if (countEl) {
-        countEl.title = `Compte WAX : ${account}`;
-    }
-
-    // Mémorise le compte pour la session (pas de données sensibles)
     sessionStorage.setItem('wax_account', account);
-    console.log('WAX connecté :', account);
+    sessionStorage.setItem('wax_wallet',  walletName);
+    console.log(`WAX connecté via ${walletName} :`, account);
 }
 
-// Auto-login au chargement si une session existe
-(async () => {
+function openWalletModal()  { document.getElementById('wallet-modal-overlay').classList.add('open'); }
+function closeWalletModal() { document.getElementById('wallet-modal-overlay').classList.remove('open'); }
+
+// Fermer en cliquant l'overlay ou "Annuler"
+document.getElementById('wallet-modal-overlay').onclick = (e) => {
+    if (e.target.id === 'wallet-modal-overlay') closeWalletModal();
+};
+document.getElementById('wallet-modal-close').onclick = closeWalletModal;
+
+// ── WAX Cloud Wallet ──────────────────────────────────────────────────────
+const wax = new WaxJS({
+    rpcEndpoint:  'https://wax.greymass.com',
+    tryAutoLogin: true,
+});
+
+document.getElementById('btn-wallet-wax').onclick = async () => {
+    closeWalletModal();
+    const btn = document.getElementById('btn-connect');
+    btn.innerText = '⏳ Cloud Wallet…'; btn.disabled = true;
     try {
-        const autoOk = await wax.isAutoLoginAvailable();
-        if (autoOk && wax.userAccount) {
-            showWaxConnected(wax.userAccount);
+        const account = await wax.login();
+        showWaxConnected(account, 'WAX Cloud Wallet');
+    } catch (e) {
+        console.warn('Cloud Wallet annulé :', e.message);
+        btn.innerText = '⚡ CONNEXION WAX'; btn.disabled = false;
+    }
+};
+
+// ── Anchor ────────────────────────────────────────────────────────────────
+const WAX_CHAIN = {
+    chainId: '1064487b3cd1a897ce03ae5b6a865651747e2e152090f99c1d19d44e01aea5a4',
+    rpcEndpoints: [{ protocol: 'https', host: 'wax.greymass.com', port: 443 }],
+};
+
+document.getElementById('btn-wallet-anchor').onclick = async () => {
+    closeWalletModal();
+    const btn = document.getElementById('btn-connect');
+    btn.innerText = '⏳ Anchor…'; btn.disabled = true;
+    try {
+        const anchor = new UAL_Anchor([WAX_CHAIN], { appName: 'Kawaï Fortune' });
+        await anchor.init();
+        const users = await anchor.login();
+        const account = await users[0].getAccountName();
+        showWaxConnected(account, 'Anchor');
+    } catch (e) {
+        console.warn('Anchor annulé :', e.message);
+        btn.innerText = '⚡ CONNEXION WAX'; btn.disabled = false;
+    }
+};
+
+// ── Wombat (via WaxJS avec endpoint Wombat) ───────────────────────────────
+document.getElementById('btn-wallet-wombat').onclick = async () => {
+    closeWalletModal();
+    const btn = document.getElementById('btn-connect');
+    btn.innerText = '⏳ Wombat…'; btn.disabled = true;
+    try {
+        // Wombat injecte window.wax comme provider EOS/WAX
+        if (window.wax && window.wax.wombat) {
+            await window.wax.login();
+            const account = window.wax.userAccount;
+            showWaxConnected(account, 'Wombat');
+        } else {
+            // Wombat non détecté → rediriger vers l'extension
+            window.open('https://www.wombat.app/', '_blank');
+            btn.innerText = '⚡ CONNEXION WAX'; btn.disabled = false;
         }
     } catch (e) {
-        // Pas de session active — pas d'erreur à afficher
+        console.warn('Wombat annulé :', e.message);
+        btn.innerText = '⚡ CONNEXION WAX'; btn.disabled = false;
     }
+};
+
+// ── Auto-login au chargement ──────────────────────────────────────────────
+(async () => {
+    // Reconnexion auto si session WAX Cloud Wallet active
+    try {
+        const ok = await wax.isAutoLoginAvailable();
+        if (ok && wax.userAccount) showWaxConnected(wax.userAccount, 'WAX Cloud Wallet');
+    } catch (_) {}
+    // Ou session mémorisée
+    const saved = sessionStorage.getItem('wax_account');
+    const savedWallet = sessionStorage.getItem('wax_wallet');
+    if (saved) showWaxConnected(saved, savedWallet || 'WAX');
 })();
 
-document.getElementById('btn-connect').onclick = async () => {
-    const btn = document.getElementById('btn-connect');
-
-    // Déjà connecté — ne rien faire
-    if (sessionStorage.getItem('wax_account')) return;
-
-    btn.innerText = '⏳ Ouverture du wallet…';
-    btn.disabled  = true;
-
-    try {
-        const account = await wax.login();  // ouvre le popup WAX Cloud Wallet
-        showWaxConnected(account);
-    } catch (err) {
-        // L'utilisateur a fermé le popup ou refusé
-        console.warn('Connexion WAX annulée :', err.message);
-        btn.innerText = '⚡ CONNEXION WAX';
-        btn.disabled  = false;
-    }
+// ── Bouton principal → ouvre la modal ────────────────────────────────────
+document.getElementById('btn-connect').onclick = () => {
+    if (sessionStorage.getItem('wax_account')) return; // déjà connecté
+    openWalletModal();
 };
 
 // ─── BOUTON FERMER POPUP ──────────────────────────────────────────────────
