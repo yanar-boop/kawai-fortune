@@ -2,4 +2,4 @@
 Original: ${JSON.stringify(i,void 0,2)}
 Augmented: ${JSON.stringify(a,void 0,2)}`);for(let u of a.slice(0,a.length-i.length))if(u.authorization.find(w=>w.actor===e.account)){if(u.account==="eosio.token"&&u.name==="transfer"){let w=a[0];if(u.data.to==="txfee.wax"&&u.data.memo.startsWith("WAX fee for ")&&JSON.stringify(w)===JSON.stringify({account:"boost.wax",name:"noop",authorization:[{actor:"boost.wax",permission:"paybw"}],data:{}}))continue}if(u.account==="eosio"&&u.name==="buyrambytes"&&u.data.receiver===e.account||u.account==="eosio"&&u.name==="powerup"&&u.data.payer===e.account&&u.data.receiver===e.account)continue;throw new Error(`Augmented transaction actions has an extra action from the original authorizing the user.
 Original: ${JSON.stringify(i,void 0,2)}
-Augmented: ${JSON.stringify(a,void 0,2)}`)}}mr.defaultTxVerifier=wh});var{WaxJS:kv}=xh();window.WaxJS=kv;})();
+Augmented: ${JSON.stringify(a,void 0,2)}`)}}mr.defaultTxVerifier=wh});typeof global>"u"&&(window.global=window);var{WaxJS:kv}=xh();window.WaxJS=kv;})();
