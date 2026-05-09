@@ -68,10 +68,16 @@ class KawaiWheel {
     }
 
     draw() {
+        const W   = this.canvas.width;
+        const H   = this.canvas.height;
+        const cx  = W / 2;
+        const cy  = H / 2;
+        const r   = cx - 10; // rayon = demi-largeur - marge
         const arc = (Math.PI * 2) / this.segments.length;
-        this.ctx.clearRect(0, 0, 450, 450);
+
+        this.ctx.clearRect(0, 0, W, H);
         this.ctx.save();
-        this.ctx.translate(225, 225);
+        this.ctx.translate(cx, cy);
         this.ctx.rotate(this.angle);
 
         this.segments.forEach((seg, i) => {
@@ -81,19 +87,19 @@ class KawaiWheel {
             this.ctx.beginPath();
             this.ctx.fillStyle = seg.color;
             this.ctx.moveTo(0, 0);
-            this.ctx.arc(0, 0, 210, segAngle, segAngle + arc);
+            this.ctx.arc(0, 0, r, segAngle, segAngle + arc);
             this.ctx.fill();
             this.ctx.strokeStyle = "#2D2D2D";
             this.ctx.lineWidth = 5;
             this.ctx.stroke();
             
-            // Icônes agrandies (80x80)
+            // Icônes — à 70% du rayon, taille adaptée aux 24 segments
             this.ctx.save();
             this.ctx.rotate(segAngle + arc / 2);
-            if (seg.imgObj) {
-                this.ctx.translate(130, 0);
+            if (seg.imgObj && seg.imgObj.complete && seg.imgObj.naturalWidth > 0) {
+                this.ctx.translate(r * 0.70, 0);
                 this.ctx.rotate(Math.PI / 2);
-                this.ctx.drawImage(seg.imgObj, -22, -22, 44, 44);
+                this.ctx.drawImage(seg.imgObj, -18, -18, 36, 36);
             }
             this.ctx.restore();
         });
@@ -101,12 +107,18 @@ class KawaiWheel {
 
         // Centre de la roue (Moyeu)
         this.ctx.beginPath();
-        this.ctx.arc(225, 225, 45, 0, Math.PI * 2);
+        this.ctx.arc(cx, cy, 40, 0, Math.PI * 2);
         this.ctx.fillStyle = "white";
         this.ctx.fill();
         this.ctx.strokeStyle = "#2D2D2D";
         this.ctx.lineWidth = 5;
         this.ctx.stroke();
+        // Texte WAX dans le moyeu
+        this.ctx.fillStyle = '#6a3fc2';
+        this.ctx.font = 'bold 13px Nunito, Quicksand, sans-serif';
+        this.ctx.textAlign = 'center';
+        this.ctx.textBaseline = 'middle';
+        this.ctx.fillText('WAX', cx, cy);
     }
 
     // --- ACTION ET ANIMATION ---
